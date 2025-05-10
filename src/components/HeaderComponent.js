@@ -1,6 +1,7 @@
 import  {LOGO_URL} from "../utils.js/Ct";
 import {useState} from "react"
 import {Link} from "react-router-dom";
+import useonlineStatus from "../utils.js/customonlineStatus.js";
 
 const HeaderComponent = () => {
 
@@ -8,6 +9,7 @@ const HeaderComponent = () => {
 
     const [btnName, setbtnName ] = useState("login")
 
+    const isonlineStatus = useonlineStatus();
     return (
         <div className = "header">
             <div className = "logo-container">
@@ -15,6 +17,9 @@ const HeaderComponent = () => {
             </div>
             <div className = "nav-items">
                 <ul> 
+                    <li>
+                        ONLINE STATUS : {isonlineStatus ? "✅" : "❌"}
+                    </li>
                     <li>
                         <Link to = "/">Home</Link>
                     </li>
