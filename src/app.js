@@ -9,16 +9,20 @@ import ErrorPage from "./components/Error";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import RestaurentMenu from "./components/RestaurentMenu";
-
+import { Provider } from "react-redux";
+import appStore from "./utils.js/appStore"
+import Cart from "./components/Cart"
 
 
 
 const AppLayout = () =>{
     return(
-        <div className = "app">
-            {HeaderComponent()}
+        <Provider store = {appStore}>
+            <div className = "app">
+            <HeaderComponent/>
             <Outlet/>
-        </div>
+            </div>
+        </Provider>
     )
 };
 
@@ -40,9 +44,14 @@ const AppRouter = createBrowserRouter([
                 element: <Contact/>
             },
             {
+                path: "/cart",
+                element: <Cart/>
+            },
+            {
                 path: "/restaurant/:resId",
-                element: < RestaurentMenu/>
+                element: <RestaurentMenu/>
             }
+            
         ],
         errorElement: <ErrorPage />
     },

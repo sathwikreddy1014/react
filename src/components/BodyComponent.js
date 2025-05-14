@@ -1,4 +1,4 @@
-import RestaurantCard from "./RestaurantCard";
+import RestaurantCard , { withPromotedLabel }from "./RestaurantCard";
 import { useState, useEffect } from "react";
 import Shimmer from "./Shimmer.js"
 import { Link } from "react-router-dom";
@@ -11,13 +11,17 @@ const BodyComponent = () => {
     const [listOfRestaurent, setListofRestaurent] = useState([]);
     const [filteredRestaurant, setFilteredRestaurant] = useState([]);
     const [searchText, setsearchText] = useState("")
+    const RestaurantCardPromoted = withPromotedLabel(RestaurantCard);
+
+    // console.log("body", listOfRestaurent);
+    
 
     useEffect( () =>{
         response();
     },[]);
     
     const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-    const targetUrl = 'https://www.swiggy.com/dapi/restaurants/list/v5?lat=17.406498&lng=78.47724389999999&collection=83631&tags=layout_CCS_Pizza&sortBy=&filters=&type=rcv2&offset=0&page_type=null';
+    const targetUrl = 'https://www.swiggy.com/dapi/restaurants/list/v5?lat=17.406498&lng=78.47724389999999&collection=83639&tags=layout_CCS_Biryani&sortBy=&filters=&type=rcv2&offset=0&page_type=null';
        
     const response = async() =>{
         const data = await fetch(proxyUrl + targetUrl);
@@ -38,49 +42,60 @@ if (!isonlinestatus) {
 }
 
 
-    return listOfRestaurent.length === 0 ? <Shimmer/> :(
-        <div className = "body">
-            <div className = "filter">
-                <input type = "text" className="search" value = {searchText} onChange = {(e)=>{setsearchText(e.target.value)}}/>
-                <button
-                className = "search-button"
-                onClick = {() =>{
-                    //filter the res
-                    // console.log(searchText);
-                    const filteredRest = listOfRestaurent.filter((restaurant) => restaurant.card.card.info.name.toLowerCase().includes(searchText.toLowerCase()));
-                    setFilteredRestaurant(filteredRest );
-                }}
-                >search</button>
-                <button 
-                className = "fil-btn"
-                onClick={() => {
-                    const filteredList = listOfRestaurent.filter(
-                    (restaurant => restaurant.card.card.info.avgRating > 4.3)
-                    );
-                    setFilteredRestaurant(filteredList);  
-                    setListofRestaurent(listOfRestaurent);
-                }}
-                >
-                    Top Rated Restaurants
-                </button>
+    return listOfRestaurent.length === 0 ? <Shimmer/> : (
+        <div className="body">
+            <div className="filter flex items-center ">
+                <div className="search m-4 p-4 ">
+                     <input className="border border-solid border-black"
+                     type = "text" 
+                     value = {searchText} 
+                     onChange = {(e)=>{setsearchText(e.target.value)}}
+                     />
+                     <button
+                     className = "search-button px-4 bg-orange-500 py-2 mx-5 h-10  rounded-lg"
+                     onClick = {() =>{
+                        const filteredRest = listOfRestaurent.filter((restaurant) => restaurant.card.card.info.name.toLowerCase().includes(searchText.toLowerCase()));
+                        setFilteredRestaurant(filteredRest );
+                        }}>
+                            Search
+                    </button>
+                </div>    
+                <div className = "top res px-4 bg-orange-500 py-2  h-10 rounded-lg">
+                    <button 
+                    className = "fil-btn"
+                    onClick={() => {
+                        const filteredList = listOfRestaurent.filter(
+                            (restaurant => restaurant.card.card.info.avgRating > 4.3)
+                        );
+                        setFilteredRestaurant(filteredList);  
+                        setListofRestaurent(listOfRestaurent);
+                    }}>
+                        Top Rated Restaurants
+                    </button>
+                </div>
             </div>
-            <div className = "restaurant-container">
-            {filteredRestaurant.map((restaurant, index) => {
-                 return (
-                    <Link 
-                    key={restaurant.card.card.info.id}
-                    to={`/restaurant/${restaurant.card.card.info.id}`}
-                    >
-                    <RestaurantCard  
-                    restaurant={restaurant} 
-                    />
-                    </Link>
-    );
-})}
-     
-            </div> {/* footer */}
+            <div className="flex flex-wrap">
+                {
+                    filteredRestaurant.map((restaurant, index) =>{
+                        return (
+                            <Link
+                            key = {restaurant.card.card.info.id}
+                            to = {`/restaurant/${restaurant.card.card.info.id}`}>
+                                { restaurant.card.card.info.promoted ? (  
+                                    <RestaurantCardPromoted restaurant = {restaurant}/>
+                                ) : (
+                                    <RestaurantCard restaurant = {restaurant}/>
+                                )}
+                                
+                            </Link>
+                        )
+                    })
+                }
+            </div>
         </div>
     )
+            
+            
 };
 
 
