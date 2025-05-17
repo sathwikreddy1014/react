@@ -2,3 +2,6 @@
 /dist
 /.parcel-cache
 /normal.css
+/coverage
+/Images
+/my-react-router-app
