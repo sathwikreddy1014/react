@@ -15,7 +15,6 @@ const usecustomRestaurentMenu = (resId) => {
         const data = await fetch(CORSAPI_URL + API_URL + resId);
         const json = await data.json();
         setresInfo(json.data);
-        // console.log("resInfoold", json.data);
     }
 
     return resInfo;

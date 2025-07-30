@@ -1,108 +1,111 @@
-import RestaurantCard , { withPromotedLabel }from "./RestaurantCard";
-import { useState, useEffect } from "react";
-import Shimmer from "./Shimmer.js"
-import { Link } from "react-router-dom";
-import useonlineStatus from "../utils.js/customonlineStatus.js";
+import React from "react";
+import Shimmer from "./Shimmer";
+import useOnlineStatus from "../utils.js/customonlineStatus.js"; // Corrected path
+import useRestaurantData from "../hooks/useRestaurantData.js";
+import useRestaurantFilters from "../hooks/useRestaurantFilters.js";
 
-
+// Import the new components
+import OfflineStatus from "./OfflineStatus";
+import HeroSection from "./HeroSection";
+import AdvancedFilters from "./AdvancedFilters";
+import ResultsHeader from "./ResultsHeader";
+import PopularCuisines from "./PopularCuisines";
+import NoResultsFound from "./NoResultsFound";
+import RestaurantGrid from "./RestaurantGrid";
+import LoadingMoreIndicator from "./LoadingMoreIndicator";
+import EndOfResults from "./EndOfResults";
 
 const BodyComponent = () => {
-    //state variable to store the restaurant data
-    const [listOfRestaurent, setListofRestaurent] = useState([]);
-    const [filteredRestaurant, setFilteredRestaurant] = useState([]);
-    const [searchText, setsearchText] = useState("")
-    const RestaurantCardPromoted = withPromotedLabel(RestaurantCard);
+    const {
+        listOfRestaurent,
+        isLoading,
+        isLoadingMore,
+        hasMore,
+        availableCuisines,
+        stats
+    } = useRestaurantData();
 
-    // console.log("body", listOfRestaurent);
-    
+    const {
+        filteredRestaurant,
+        searchText,
+        setsearchText,
+        activeFilter,
+        setActiveFilter,
+        sortBy,
+        setSortBy,
+        priceRange,
+        setPriceRange,
+        cuisineFilter,
+        setCuisineFilter,
+        handleSearch,
+        handleKeyPress,
+        resetFilters
+    } = useRestaurantFilters(listOfRestaurent);
 
-    useEffect( () =>{
-        response();
-    },[]);
-    
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-    const targetUrl = 'https://www.swiggy.com/dapi/restaurants/list/v5?lat=17.406498&lng=78.47724389999999&collection=83639&tags=layout_CCS_Biryani&sortBy=&filters=&type=rcv2&offset=0&page_type=null';
-       
-    const response = async() =>{
-        const data = await fetch(proxyUrl + targetUrl);
-        const json = await data.json();
-        const allCards = json.data?.cards || [];
-        const restaurantCards = allCards.filter(
-          (card) =>
-            card?.card?.card?.["@type"] ===
-            "type.googleapis.com/swiggy.presentation.food.v2.Restaurant"
-        );
-        setListofRestaurent(restaurantCards);
-        setFilteredRestaurant(restaurantCards);
-};
+    const isOnlineStatus = useOnlineStatus();
 
-const isonlinestatus = useonlineStatus();
-if (!isonlinestatus) {
-    return <h1>Offline, Please check your internet connection</h1>;
-}
+    if (!isOnlineStatus) {
+        return <OfflineStatus />;
+    }
 
+    if (isLoading) {
+        return <Shimmer />;
+    }
 
-    return listOfRestaurent.length === 0 ? <Shimmer/> : (
-        <div className="body">
-            <div className="filter flex items-center ">
-                <div className="search m-4 p-4 ">
-                     <input className="border border-solid border-black"
-                     type = "text" 
-                     value = {searchText} 
-                     onChange = {(e)=>{setsearchText(e.target.value)}}
-                     />
-                     <button
-                     className = "search-button px-4 bg-orange-500 py-2 mx-5 h-10  rounded-lg"
-                     onClick = {() =>{
-                        const filteredRest = listOfRestaurent.filter((restaurant) => restaurant.card.card.info.name.toLowerCase().includes(searchText.toLowerCase()));
-                        setFilteredRestaurant(filteredRest );
-                        }}>
-                            Search
-                    </button>
-                </div>    
-                <div className = "top res px-4 bg-orange-500 py-2  h-10 rounded-lg">
-                    <button 
-                    className = "fil-btn"
-                    onClick={() => {
-                        const filteredList = listOfRestaurent.filter(
-                            (restaurant => restaurant.card.card.info.avgRating > 4.3)
-                        );
-                        setFilteredRestaurant(filteredList);  
-                        setListofRestaurent(listOfRestaurent);
-                    }}>
-                        Top Rated Restaurants
-                    </button>
-                </div>
-            </div>
-            <div className="flex flex-wrap">
-                {
-                    filteredRestaurant.map((restaurant, index) =>{
-                        return (
-                            <Link
-                            key = {restaurant.card.card.info.id}
-                            to = {`/restaurant/${restaurant.card.card.info.id}`}>
-                                { restaurant.card.card.info.promoted ? (  
-                                    <RestaurantCardPromoted restaurant = {restaurant}/>
-                                ) : (
-                                    <RestaurantCard restaurant = {restaurant}/>
-                                )}
-                                
-                            </Link>
-                        )
-                    })
-                }
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+            <HeroSection
+                searchText={searchText}
+                setsearchText={setsearchText}
+                handleSearch={handleSearch}
+                handleKeyPress={handleKeyPress}
+                activeFilter={activeFilter}
+                setActiveFilter={setActiveFilter}
+            />
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <AdvancedFilters
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    priceRange={priceRange}
+                    setPriceRange={setPriceRange}
+                    cuisineFilter={cuisineFilter}
+                    setCuisineFilter={setCuisineFilter}
+                    availableCuisines={availableCuisines}
+                    searchText={searchText} // Passed for conditional rendering of reset button
+                    activeFilter={activeFilter} // Passed for conditional rendering of reset button
+                    resetFilters={resetFilters}
+                />
+
+                <ResultsHeader
+                    searchText={searchText}
+                    activeFilter={activeFilter}
+                    filteredRestaurantLength={filteredRestaurant.length}
+                    sortBy={sortBy}
+                />
+
+                <PopularCuisines
+                    topCuisines={stats.topCuisines}
+                    cuisineFilter={cuisineFilter}
+                    setCuisineFilter={setCuisineFilter}
+                />
+
+                {filteredRestaurant.length === 0 ? (
+                    <NoResultsFound resetFilters={resetFilters} />
+                ) : (
+                    <>
+                        <RestaurantGrid restaurants={filteredRestaurant} />
+
+                        {isLoadingMore && <LoadingMoreIndicator />}
+
+                        {!hasMore && !isLoadingMore && filteredRestaurant.length > 0 && (
+                            <EndOfResults />
+                        )}
+                    </>
+                )}
             </div>
         </div>
-    )
-            
-            
+    );
 };
 
-
 export default BodyComponent;
-
-
-
-
-
- 

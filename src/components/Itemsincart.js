@@ -8,8 +8,6 @@ const Itemsincart = () => {
 
     const handleAddItem = (id) => {
         dispatch(addinsidecart({ id }));
-        console.log("called");
-        
     };
 
     return (
@@ -23,8 +21,6 @@ const Itemsincart = () => {
                             Quantity: {item.card?.info?.quantity} <br />
                             Price: ₹ {item.card?.info?.price/100} {/* This is the updated price */}
                         </div>
-
-                        >
                     </div>
 
                     <div className="w-2/12 my-3 text-center">
